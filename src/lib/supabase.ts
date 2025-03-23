@@ -1,15 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-  console.error('NEXT_PUBLIC_SUPABASE_URL is not defined');
-}
+// Default values for build time - these will be overridden by environment variables in production
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://niamiwnqcnqetrfuzqbr.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5pYW1pd25xY25xZXRyZnV6cWJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI3NDc1MjUsImV4cCI6MjA1ODMyMzUyNX0.4jv9FqvgQxUbwh66vCZB3yQ_QmfnTZHt9Ii0ffdJbIU';
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-  console.error('NEXT_PUBLIC_SUPABASE_ANON_KEY is not defined');
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  console.warn('Using default Supabase credentials. Make sure to set the correct environment variables in production.');
 }
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
