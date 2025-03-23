@@ -1,3 +1,5 @@
+This is my attempt at vibe coding with AI. The documents in the doc folder were genereated using prompts to Claude, then fed into Cursor for design. 
+
 # OKR Goal Tracker
 
 A modern web application for tracking Objectives and Key Results (OKRs) and team goals. Built with Next.js, TypeScript, Tailwind CSS, and Supabase.
