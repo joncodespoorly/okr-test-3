@@ -51,7 +51,7 @@ A modern web application for tracking Objectives and Key Results (OKRs) and team
 
 1. Clone the repository:
 ```bash
-git clone [repository-url]
+git clone https://github.com/joncodespoorly/okr-test-3.git
 cd okr-test-3
 ```
 
