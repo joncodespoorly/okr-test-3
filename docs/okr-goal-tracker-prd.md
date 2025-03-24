@@ -14,45 +14,39 @@ A web-based application that helps product teams track company OKRs (Objectives 
 ### 1.3 Target Users
 - Product managers and business analysts (team of 8-14 people)
 - No authentication required - based on team trust
+- Focus on desktop experience with responsive design
 
 ## 2. Key Features and Requirements
 
 ### 2.1 Company OKR Management
 - **Set and Edit Company OKRs**
   - Create, view, and edit company-level OKRs
-  - Each OKR should have a title and description
+  - Each OKR has a title and description
   - Acceptance Criteria:
-    - Users can add new OKRs with a title
+    - Users can add new OKRs with a title and description
     - Users can edit existing OKRs
-    - OKRs display properly in the main dashboard
+    - OKRs display in a clean card layout in the main dashboard
 
 - **OKR Progress Tracking**
   - Track progress of each OKR on a scale of 0-1 (0-100%)
   - Visual slider with percentage representation
   - Color-coded progress indicators:
-    - Red (0%)
-    - Amber (1-70%)
+    - Red (0-30%)
+    - Amber (31-70%)
     - Green (71-100%)
   - Acceptance Criteria:
-    - Slider control allows adjustment of progress from 0-100%
-    - Percentage is displayed numerically next to slider
-    - Color changes automatically based on progress value
-    - Progress can be updated independently from weekly goals
+    - Slider control allows smooth adjustment of progress
+    - Percentage is displayed numerically
+    - Color changes automatically based on progress thresholds
+    - Progress updates are saved in real-time
 
 ### 2.2 Team Management
 - **Team Member Management**
-  - Add, edit, and remove team members
+  - Add and remove team members
   - Acceptance Criteria:
     - Users can add new team members with a name
-    - Users can edit or remove existing team members
+    - Users can remove existing team members
     - Team members appear in the assignment dropdown for weekly goals
-
-- **Team Profile**
-  - Set team name and icon (image or emoji)
-  - Acceptance Criteria:
-    - Team name is prominently displayed
-    - Team icon can be set as either an emoji or uploaded image
-    - Changes to team profile are immediately reflected
 
 ### 2.3 Weekly Goal Management
 - **Create and Assign Goals**
@@ -63,53 +57,56 @@ A web-based application that helps product teams track company OKRs (Objectives 
     - Users can create new weekly goals with a description
     - Goals can be assigned to team members via dropdown
     - Goals can be linked to OKRs via dropdown
-    - UI clearly shows assignment and OKR relationship
+    - Clear visual representation of assignments
 
 - **Goal Status Tracking**
   - Mark goals as Not Started, In Progress, or Completed
-  - Add comments to goals
+  - Status updates reflect in real-time
   - Acceptance Criteria:
     - Goals can be marked with appropriate status
-    - Status changes are visually indicated
-    - Comments can be added to provide context or updates
+    - Status changes are visually indicated with colors
+    - Status updates sync across all views
 
 ### 2.4 Analytics and Reporting
 - **Dashboard Views**
   - Dashboard 1: Team Members by OKR
-    - Visual representation of which team members are working on which OKRs
+    - Bar chart showing distribution of team members across OKRs
     - Acceptance Criteria:
-      - Chart shows distribution of team members across OKRs
-      - Data updates dynamically when assignments change
+      - Chart updates dynamically with assignments
+      - Clear visual representation of member distribution
 
   - Dashboard 2: Goals by OKR
-    - Breakdown of weekly goals associated with each OKR
+    - Bar chart showing goals per OKR with status breakdown
     - Acceptance Criteria:
-      - Chart shows count and distribution of goals across OKRs
-      - Data updates dynamically when goals are added or modified
+      - Chart shows distribution of goals
+      - Status colors match goal status indicators
 
-  - Dashboard 3: Goal Status Breakdown
-    - Overview of goals by status (Not Started, In Progress, Completed)
+  - Dashboard 3: Goal Status Overview
+    - Pie chart showing goal status distribution
     - Acceptance Criteria:
-      - Chart shows distribution of goals by status
-      - Data updates dynamically when goal statuses change
+      - Chart shows percentage breakdown by status
+      - Updates in real-time with status changes
 
 ## 3. Technical Specifications
 
 ### 3.1 Platform
-- Web application accessible via modern browsers
-- Responsive design with focus on desktop experience
+- Web application built with Next.js 14
+- Responsive design optimized for desktop
 - Dark mode UI with modern aesthetics
+- Real-time updates using Supabase
 
-### 3.2 Tech Stack Recommendations
+### 3.2 Tech Stack Implementation
 - **Frontend**:
-  - Framework: React with TypeScript
-  - UI Component Library: shadcn/ui (built on Tailwind CSS with dark mode support)
-  - Data Visualization: Recharts or Tremor for dashboard components
-  - State Management: React Context API with hooks (sufficient for this application scale)
+  - Next.js with TypeScript
+  - Tailwind CSS for styling
+  - Shadcn/ui components
+  - Recharts for visualizations
+  - React Context for state management
 
 - **Backend**:
-  - Supabase for PostgreSQL database and API
-  - Server-side functions via Supabase Functions if needed
+  - Supabase for PostgreSQL database
+  - Supabase Realtime for live updates
+  - Row Level Security for data protection
 
 ### 3.3 Data Model
 

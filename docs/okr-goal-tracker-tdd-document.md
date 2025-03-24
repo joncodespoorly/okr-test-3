@@ -1,236 +1,82 @@
 # OKR and Weekly Goal Tracker - Technical Design Document
 
-## System Design
+## System Architecture
 
-- **Application Type**: Single-page web application
-- **Deployment Platform**: Vercel (for Next.js hosting)
+- **Application Type**: Next.js single-page application
+- **Framework**: Next.js 14 with App Router
 - **Database**: Supabase PostgreSQL
-- **Real-time Capabilities**: Supabase Realtime for live updates
-- **Infrastructure**: Serverless functions via Vercel/Supabase Edge Functions
-- **File Storage**: Supabase Storage (for team icons)
-- **Monitoring**: Vercel Analytics
+- **Real-time Updates**: Supabase Realtime
+- **Hosting**: Vercel
 
-## Architecture Pattern
+## Component Architecture
 
-- **Frontend Architecture**: Next.js with App Router
-- **Component Architecture**: Atomic design pattern
-  - Atoms: Basic UI elements (buttons, inputs, sliders)
-  - Molecules: Composite components (OKR card, team member item)
-  - Organisms: Complex UI sections (OKR panel, Weekly Goals panel)
-  - Templates: Page layouts
-  - Pages: Complete views with data fetching
-- **Backend Architecture**: Supabase for database, auth, and API
-- **Rendering Strategy**: Client-side rendering with hydration
-  - Static generation for layout components
-  - Client components for interactive elements
+### Core Components
 
-## State Management
+```typescript
+// Layout Components
+Layout                    // Root layout with providers
+MainContent              // Main content wrapper
 
-- **Global State**: React Context API
-  - `TeamContext`: Manage team data and team members
-  - `OkrContext`: Manage OKRs and progress
-  - `GoalContext`: Manage weekly goals and their statuses
-- **Server State**: React Query (TanStack Query)
-  - Data fetching, caching, and synchronization
+// Feature Components
+OKRPanel                 // OKR management section
+WeeklyGoalsPanel         // Weekly goals section
+ReportsPanel             // Analytics dashboard
+
+// Shared Components
+Slider                   // Progress slider with color states
+StatusBadge             // Status indicator with colors
+ModalForm               // Reusable modal form
+```
+
+### State Management
+
+- **React Context**
+  - TeamContext: Team member management
+  - OKRContext: OKR state and operations
+  - GoalContext: Weekly goals state
+
+- **Local State**
+  - Component-specific UI states
+  - Form states with React Hook Form
+  - Modal visibility states
+
+### Data Flow
+
+- **Client → Server**
+  - Direct Supabase operations
   - Optimistic updates for better UX
-  - Background refetching for fresh data
-- **Form State**: React Hook Form
-  - Validation, error handling, and submission
-  - Integration with Zod for schema validation
-- **UI State**: Local component state
-  - Toggle states, modal visibility, etc.
+  - Error handling with toast notifications
 
-## Data Flow
-
-- **Client → Server**:
-  - Forms submit data via Supabase SDK
-  - Mutations handled by React Query
-  - Optimistic updates for instant feedback
-  
-- **Server → Client**:
-  - Initial data load via React Query/SWR
-  - Real-time updates via Supabase Realtime subscriptions
-  - Cached data invalidation on updates
-
-- **Cross-Component Communication**:
-  - Context provides data to components
-  - Events/callbacks for specific interactions
-  - Prop drilling minimized by context usage
-
-- **Real-time Updates**:
-  - Subscribe to database changes for relevant tables
-  - Update local state when remote changes occur
-  - Trigger UI updates for visualization components
+- **Server → Client**
+  - Initial data load with React Query
+  - Real-time updates via Supabase subscriptions
+  - Automatic UI updates on data changes
 
 ## Technical Stack
 
-- **Frontend**:
-  - Framework: Next.js 14+ with React 18+
-  - TypeScript for type safety
-  - Tailwind CSS for styling
-  - Shadcn/UI for component library
-  - Lucide Icons for iconography
-  - Sonner for toast notifications
-  - React Hook Form for form management
-  - Zod for schema validation
-  - Recharts for data visualization
+### Frontend
+- Next.js 14
+- TypeScript
+- Tailwind CSS
+- Shadcn/ui components
+- Recharts for visualizations
+- React Hook Form
+- Zod for validation
+- Sonner for toasts
 
-- **Backend**:
-  - Supabase for database and authentication
-  - Postgres for relational data storage
-  - Row-level security policies for data access control
-  - Supabase Functions for serverless operations
-  - Supabase Storage for file storage
+### Backend
+- Supabase
+  - PostgreSQL database
+  - Row Level Security
+  - Realtime subscriptions
 
-- **Development Tools**:
-  - ESLint for code quality
-  - Prettier for code formatting
-  - Husky for Git hooks
-  - Jest and React Testing Library for testing
-  - Storybook for component documentation
-
-## Authentication Process
-
-- **No Authentication Required**:
-  - As specified in the PRD, the application relies on team trust
-  - Open access to all team members
-  - No login/signup flow needed
-
-- **Future Authentication Considerations** (if needed later):
-  - Implement Supabase Auth
-  - Email/password authentication
-  - Optional social provider login
-  - JWT token-based session management
-
-## Route Design
-
-- **App Router Structure**:
-
-```
-app/
-├── layout.tsx                # Main application layout
-├── page.tsx                  # Dashboard page (main view)
-├── loading.tsx               # Loading state
-├── error.tsx                 # Error handling
-├── components/               # Shared components
-│   ├── ui/                   # Shadcn UI components
-│   ├── teams/                # Team-related components
-│   ├── okrs/                 # OKR-related components
-│   ├── goals/                # Goal-related components
-│   └── reports/              # Visualization components
-├── lib/                      # Utilities and helpers
-│   ├── utils.ts              # General utilities
-│   ├── supabase.ts           # Supabase client
-│   └── schemas.ts            # Zod validation schemas
-├── hooks/                    # Custom React hooks
-│   ├── use-team.ts           # Team data hooks
-│   ├── use-okrs.ts           # OKR data hooks
-│   └── use-goals.ts          # Goal data hooks
-└── contexts/                 # React contexts
-    ├── team-context.tsx      # Team state management
-    ├── okr-context.tsx       # OKR state management
-    └── goal-context.tsx      # Goal state management
-```
-
-## API Design
-
-- **Supabase API Usage**:
-  - Direct table operations via Supabase client
-  - Custom RLS policies for data access control
-
-- **Core API Functions**:
-
-```typescript
-// Team operations
-const getTeam = () => supabase.from('teams').select('*').single();
-const updateTeam = (data) => supabase.from('teams').update(data).match({ id: team.id });
-
-// Team member operations
-const getTeamMembers = () => supabase.from('team_members').select('*');
-const addTeamMember = (data) => supabase.from('team_members').insert(data);
-const updateTeamMember = (id, data) => supabase.from('team_members').update(data).match({ id });
-const deleteTeamMember = (id) => supabase.from('team_members').delete().match({ id });
-
-// OKR operations
-const getOkrs = () => supabase.from('okrs').select('*');
-const addOkr = (data) => supabase.from('okrs').insert(data);
-const updateOkr = (id, data) => supabase.from('okrs').update(data).match({ id });
-const deleteOkr = (id) => supabase.from('okrs').delete().match({ id });
-
-// Weekly goal operations
-const getGoals = () => supabase.from('weekly_goals').select('*, team_members(*), okrs(*)');
-const addGoal = (data) => supabase.from('weekly_goals').insert(data);
-const updateGoal = (id, data) => supabase.from('weekly_goals').update(data).match({ id });
-const deleteGoal = (id) => supabase.from('weekly_goals').delete().match({ id });
-
-// Goal comment operations
-const getGoalComments = (goalId) => supabase.from('goal_comments').select('*').match({ goal_id: goalId });
-const addGoalComment = (data) => supabase.from('goal_comments').insert(data);
-const deleteGoalComment = (id) => supabase.from('goal_comments').delete().match({ id });
-```
-
-- **Real-time Subscriptions**:
-
-```typescript
-// Subscribe to team updates
-supabase
-  .channel('team-changes')
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'teams' }, handleTeamChange)
-  .subscribe();
-
-// Subscribe to OKR updates
-supabase
-  .channel('okr-changes')
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'okrs' }, handleOkrChange)
-  .subscribe();
-
-// Subscribe to goal updates
-supabase
-  .channel('goal-changes')
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'weekly_goals' }, handleGoalChange)
-  .subscribe();
-```
-
-## Database Design ERD
-
-**Entity Relationship Diagram**
-
-```
-+---------------+       +------------------+       +-------------+
-|    teams      |       |   team_members   |       |    okrs     |
-+---------------+       +------------------+       +-------------+
-| id (PK)       |       | id (PK)          |       | id (PK)     |
-| name          |       | team_id (FK)     |----->| team_id (FK)|
-| icon_type     |       | name             |       | title       |
-| icon_value    |<------|                  |       | description |
-| created_at    |       | created_at       |       | progress    |
-+---------------+       +------------------+       | created_at  |
-                                |                  +-------------+
-                                |                        |
-                                |                        |
-                                v                        v
-                        +------------------+       +-------------+
-                        |   weekly_goals   |       |goal_comments|
-                        +------------------+       +-------------+
-                        | id (PK)          |       | id (PK)     |
-                        | team_id (FK)     |       | goal_id (FK)|
-                        | okr_id (FK)      |<------| comment     |
-                        | team_member_id(FK)|       | created_at |
-                        | description      |       +-------------+
-                        | status           |
-                        | created_at       |
-                        +------------------+
-```
-
-**Database Schema**
+## Database Schema
 
 ```sql
 -- Teams table
 CREATE TABLE teams (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
-  icon_type TEXT NOT NULL CHECK (icon_type IN ('emoji', 'image')),
-  icon_value TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -256,90 +102,177 @@ CREATE TABLE okrs (
 CREATE TABLE weekly_goals (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
-  okr_id UUID REFERENCES okrs(id) ON DELETE SET NULL,
-  team_member_id UUID REFERENCES team_members(id) ON DELETE SET NULL,
+  okr_id UUID NOT NULL REFERENCES okrs(id) ON DELETE CASCADE,
+  team_member_id UUID NOT NULL REFERENCES team_members(id) ON DELETE CASCADE,
   description TEXT NOT NULL,
   status TEXT NOT NULL CHECK (status IN ('not_started', 'in_progress', 'completed')) DEFAULT 'not_started',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
--- Goal comments table
-CREATE TABLE goal_comments (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  goal_id UUID NOT NULL REFERENCES weekly_goals(id) ON DELETE CASCADE,
-  comment TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
 ```
 
-## Potential Challenges and Solutions
+## API Implementation
 
-### 1. Real-time Data Synchronization
+```typescript
+// Supabase API functions
+const api = {
+  // Team operations
+  getTeam: () => supabase.from('teams').select('*').single(),
+  
+  // Team member operations
+  getTeamMembers: () => supabase.from('team_members').select('*'),
+  addTeamMember: (name: string) => supabase.from('team_members').insert({ name }),
+  deleteTeamMember: (id: string) => supabase.from('team_members').delete().eq('id', id),
+  
+  // OKR operations
+  getOkrs: () => supabase.from('okrs').select('*'),
+  addOkr: (data: OkrInput) => supabase.from('okrs').insert(data),
+  updateOkr: (id: string, data: Partial<OkrInput>) => 
+    supabase.from('okrs').update(data).eq('id', id),
+  deleteOkr: (id: string) => supabase.from('okrs').delete().eq('id', id),
+  
+  // Weekly goal operations
+  getGoals: () => supabase.from('weekly_goals')
+    .select(`*, team_members(*), okrs(*)`),
+  addGoal: (data: GoalInput) => supabase.from('weekly_goals').insert(data),
+  updateGoal: (id: string, data: Partial<GoalInput>) =>
+    supabase.from('weekly_goals').update(data).eq('id', id),
+  deleteGoal: (id: string) => supabase.from('weekly_goals').delete().eq('id', id)
+};
+```
 
-**Challenge**: Ensuring consistent state across all components when data changes.
+## Type Definitions
 
-**Solution**:
-- Implement React Query's cache invalidation strategy
-- Set up proper Supabase real-time subscriptions
-- Use optimistic updates for immediate feedback
-- Handle edge cases like conflicting updates
+```typescript
+// Core types
+interface Team {
+  id: string;
+  name: string;
+  created_at: string;
+}
 
-### 2. Component Reusability
+interface TeamMember {
+  id: string;
+  team_id: string;
+  name: string;
+  created_at: string;
+}
 
-**Challenge**: Creating reusable components that can adapt to different contexts.
+interface OKR {
+  id: string;
+  team_id: string;
+  title: string;
+  description?: string;
+  progress: number;
+  created_at: string;
+}
 
-**Solution**:
-- Implement the atomic design pattern
-- Create composable components with clear interfaces
-- Use TypeScript for strong typing and autocompletion
-- Document components with comments and potentially Storybook
+interface WeeklyGoal {
+  id: string;
+  team_id: string;
+  okr_id: string;
+  team_member_id: string;
+  description: string;
+  status: 'not_started' | 'in_progress' | 'completed';
+  created_at: string;
+  team_members?: TeamMember;
+  okrs?: OKR;
+}
 
-### 3. Complex UI Interactions
+// Input types
+interface OkrInput {
+  title: string;
+  description?: string;
+  progress?: number;
+}
 
-**Challenge**: Implementing the progress sliders and status toggles with proper visual feedback.
+interface GoalInput {
+  description: string;
+  team_member_id: string;
+  okr_id: string;
+  status?: 'not_started' | 'in_progress' | 'completed';
+}
+```
 
-**Solution**:
-- Leverage Shadcn UI components as a foundation
-- Custom styling with Tailwind for color transitions
-- Implement proper state management for interactive elements
-- Use React's useTransition for smoother UX during updates
+## Real-time Implementation
 
-### 4. Data Visualization Performance
+```typescript
+// Supabase real-time subscriptions
+const setupRealtimeSubscriptions = () => {
+  // OKR changes
+  supabase
+    .channel('okr-changes')
+    .on('postgres_changes', { 
+      event: '*', 
+      schema: 'public', 
+      table: 'okrs' 
+    }, handleOkrChange)
+    .subscribe();
 
-**Challenge**: Rendering and updating charts efficiently when data changes.
+  // Goal changes
+  supabase
+    .channel('goal-changes')
+    .on('postgres_changes', { 
+      event: '*', 
+      schema: 'public', 
+      table: 'weekly_goals' 
+    }, handleGoalChange)
+    .subscribe();
 
-**Solution**:
-- Use memoization to prevent unnecessary re-renders
-- Implement loading states for visualization components
-- Consider windowing techniques for large datasets
-- Optimize Recharts configurations for performance
+  // Team member changes
+  supabase
+    .channel('member-changes')
+    .on('postgres_changes', { 
+      event: '*', 
+      schema: 'public', 
+      table: 'team_members' 
+    }, handleTeamMemberChange)
+    .subscribe();
+};
+```
 
-### 5. Data Relationships Integrity
+## Error Handling
 
-**Challenge**: Maintaining referential integrity when deleting related entities.
+```typescript
+// Error handling utilities
+const handleError = (error: Error) => {
+  console.error(error);
+  toast.error('An error occurred. Please try again.');
+};
 
-**Solution**:
-- Implement cascading deletes at the database level
-- Add confirmation dialogs for destructive actions
-- Consider soft deletes for important records
-- Handle orphaned records gracefully in the UI
+// API wrapper with error handling
+const apiWrapper = async <T>(
+  operation: () => Promise<T>
+): Promise<T | null> => {
+  try {
+    const result = await operation();
+    return result;
+  } catch (error) {
+    handleError(error as Error);
+    return null;
+  }
+};
+```
 
-### 6. Future Scaling
+## Performance Optimizations
 
-**Challenge**: Supporting larger teams and more data over time.
+- React Query for data caching
+- Optimistic updates for better UX
+- Debounced progress updates
+- Memoized components where beneficial
+- Efficient real-time subscription management
 
-**Solution**:
-- Implement pagination for data fetching
-- Use indices for frequently queried columns
-- Consider data archiving strategies for old/completed items
-- Optimize database queries for performance
+## Security Considerations
 
-### 7. Dark Mode Implementation
+- Row Level Security policies
+- Input validation with Zod
+- XSS prevention with proper escaping
+- CORS configuration
+- Rate limiting on API endpoints
 
-**Challenge**: Consistent dark mode styling across all components.
+## Testing Strategy
 
-**Solution**:
-- Leverage Tailwind's dark mode utilities
-- Ensure proper contrast ratios for accessibility
-- Test color combinations for readability
-- Create consistent color variable system
+- Jest for unit testing
+- React Testing Library for component tests
+- Integration tests for critical flows
+- E2E testing with Playwright
+- Real-time testing utilities
